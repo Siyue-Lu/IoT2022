@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/activitybackground">
+
+
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dip"
+        android:gravity="center"
+        android:text="@string/txv_title_temp"
+        android:textColor="@color/black_alpha"
+        android:textSize="30sp" />
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="5dip"
+        >
+        <TextView
+            android:id="@+id/indoorTemp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="5dip"
+            android:layout_marginLeft="10dp"
+            android:text="@string/txv_indoor_temp"
+            android:textColor="@color/black_alpha"
+            android:textSize="20sp"
+            android:layout_marginBottom="15dp"/>
+
+        <TextView
+            android:id="@+id/indoorTempShow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="5dip"
+            android:layout_marginLeft="50dp"
+            android:text="@string/txv_indoor_temp_show"
+            android:textColor="@color/black_alpha"
+            android:textSize="20sp" />
+
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="5dip">
+        <TextView
+            android:id="@+id/outdoorLight"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="5dip"
+            android:layout_marginLeft="20dp"
+            android:text="@string/txv_outdoor_light"
+            android:textColor="@color/blue_text"
+            android:textSize="20sp" />
+
+        <TextView
+            android:id="@+id/outdoorLightShow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="5dip"
+            android:layout_marginLeft="20dp"
+            android:text="@string/txv_outdoor_light_show"
+            android:textColor="@color/title_bar_color"
+            android:textSize="20sp" />
+
+        <Switch
+            android:id="@+id/btnToggle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="40dp" />
+
+    </LinearLayout>
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="5dip">
+
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="5dip">
+
+        <Button
+            android:id="@+id/btnUpdateTemp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:background="@color/colorPrimary"
+            android:padding="5dip"
+            android:text=" Update temperature "
+            android:textAllCaps="false"
+            android:textColor="#FFFFFF"
+            android:textSize="17sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="5dip">
+
+
+
+    </LinearLayout>
+
+</LinearLayout>
