@@ -1,0 +1,2 @@
+rootProject.name = "IoT 2022 Group 7"
+include ':app'
