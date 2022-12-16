@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.iot2022group7">
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:allowBackup="true"
@@ -9,7 +12,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.IoT2022Group7">
-        <activity android:name=".MainActivity">
+        <service android:name="org.eclipse.paho.android.service.MqttService" />
+        <activity android:name=".MainActivity" android:enabled="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
