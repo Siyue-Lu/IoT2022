@@ -1,6 +1,7 @@
 package com.example.iot2022group7;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import android.os.Bundle;
 import android.os.Handler;
@@ -11,6 +12,7 @@ import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.TimePicker;
+import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -32,12 +34,7 @@ public class MainActivity extends AppCompatActivity {
     TimePicker timePickerTo = null;
     Button btnConfirmTime = null;
     Handler handler = new Handler();
-    private static final int INTERVAL = 3000;
-
-    private void setLightText(int text, int colour) {
-        outdoor_light_show.setText(text);
-        outdoor_light_show.setTextColor(getResources().getColor(colour));
-    }
+    private static final int INTERVAL = 5000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
         timePickerTo = (TimePicker) findViewById(R.id.time_picker_to);
         btnConfirmTime = (Button) findViewById(R.id.btnConfirmTime);
 
-        // get temperature and display in UI periodically
+        // get temperature periodically, display on UI and run scripts under certain conditions
         new Runnable() {
             @Override
             public void run() {
@@ -61,36 +58,24 @@ public class MainActivity extends AppCompatActivity {
             }
         }.run();
 
-        // get light status and display in UI on create
-        ((Runnable) () -> {
-            boolean isOn = runScript("python SendLightsStatus.py").equals("True");
-            if (isOn) {
-                setLightText(R.string.txv_on, R.color.teal_700);
-            } else {
-                setLightText(R.string.txv_off, R.color.title_bar_color);
-            }
-            lightToggle.setChecked(isOn);
-        }).run();
+        // get light status and display on UI on create
+        updateLight();
 
         // run scripts and change UI on toggle
         lightToggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
-                    ((Runnable) () -> {
-                        runScript("python TurnOnLights.py");
-                        setLightText(R.string.txv_on, R.color.teal_700);
-                    }).run();
+                    runScript("python TurnOnLights.py");
+                    setLightText(R.string.txv_on, R.color.teal_700);
                 } else {
-                    ((Runnable) () -> {
-                        runScript("python TurnOffLights.py");
-                        setLightText(R.string.txv_off, R.color.title_bar_color);
-                    }).run();
+                    runScript("python TurnOffLights.py");
+                    setLightText(R.string.txv_off, R.color.title_bar_color);
                 }
             }
         });
 
-        // get data of two time pickers and switch the light on the off according to the set time
+        // get data of two time pickers and switch the light on/off according to the set time
         btnConfirmTime.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 int hourFrom = timePickerFrom.getHour();
@@ -112,24 +97,42 @@ public class MainActivity extends AppCompatActivity {
 
                 long timeInMillisFrom = calendarFrom.getTimeInMillis();
                 long timeInMillisTo = calendarTo.getTimeInMillis();
+                long currentTime = System.currentTimeMillis();
 
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        runScript("python TurnOnLights.py");
-                        handler.postDelayed(this, timeInMillisFrom - System.currentTimeMillis());
-                    }
-                }.run();
+                handler.postDelayed(() -> {
+                    runScript("python TurnOnLights.py");
+                    updateLight();
+                }, timeInMillisFrom - currentTime);
 
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        runScript("python TurnOffLights.py");
-                        handler.postDelayed(this, timeInMillisTo - System.currentTimeMillis());
-                    }
-                }.run();
+                handler.postDelayed(() -> {
+                    runScript("python TurnOffLights.py");
+                    updateLight();
+                }, timeInMillisTo - currentTime);
+
+                showToast();
             }
         });
+    }
+
+    private void setLightText(int text, int colour) {
+        outdoor_light_show.setText(text);
+        outdoor_light_show.setTextColor(ContextCompat.getColor(this, colour));
+    }
+
+    private void updateLight() {
+        ((Runnable) () -> {
+            boolean isOn = runScript("python SendLightsStatus.py").equals("True");
+            if (isOn) {
+                setLightText(R.string.txv_on, R.color.teal_700);
+            } else {
+                setLightText(R.string.txv_off, R.color.title_bar_color);
+            }
+            lightToggle.setChecked(isOn);
+        }).run();
+    }
+
+    private void showToast() {
+        Toast.makeText(this, "Schedule set!", Toast.LENGTH_SHORT).show();
     }
 
     public String runScript(String command) {
