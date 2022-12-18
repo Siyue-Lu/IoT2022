@@ -5,15 +5,18 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.StrictMode;
+import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.TimePicker;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Calendar;
 
 import ch.ethz.ssh2.Connection;
 import ch.ethz.ssh2.Session;
@@ -25,8 +28,11 @@ public class MainActivity extends AppCompatActivity {
     TextView txv_temp_indoor = null;
     TextView outdoor_light_show = null;
     Switch lightToggle = null;
-    Button btnUpdateTemp = null;
-    private static final int INTERVAL = 1000;
+    TimePicker timePickerFrom = null;
+    TimePicker timePickerTo = null;
+    Button btnConfirmTime = null;
+    Handler handler = new Handler();
+    private static final int INTERVAL = 3000;
 
     private void setLightText(int text, int colour) {
         outdoor_light_show.setText(text);
@@ -41,7 +47,9 @@ public class MainActivity extends AppCompatActivity {
         txv_temp_indoor = (TextView) findViewById(R.id.indoorTempShow);
         outdoor_light_show = (TextView) findViewById(R.id.outdoorLightShow);
         lightToggle = (Switch) findViewById(R.id.btnToggle);
-        btnUpdateTemp = (Button) findViewById(R.id.btnUpdateTemp);
+        timePickerFrom = (TimePicker) findViewById(R.id.time_picker_from);
+        timePickerTo = (TimePicker) findViewById(R.id.time_picker_to);
+        btnConfirmTime = (Button) findViewById(R.id.btnConfirmTime);
 
         // get temperature and display in UI periodically
         new Runnable() {
@@ -49,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
                 String temp = runScript("python SendTemperature.py");
                 txv_temp_indoor.setText(temp);
-                new Handler().postDelayed(this, INTERVAL);
+                handler.postDelayed(this, INTERVAL);
             }
         }.run();
 
@@ -82,11 +90,46 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-//        btnUpdateTemp.setOnClickListener(new View.OnClickListener() {
-//            public void onClick(View v) {
-//
-//            }
-//        });
+        // get data of two time pickers and switch the light on the off according to the set time
+        btnConfirmTime.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                int hourFrom = timePickerFrom.getHour();
+                int minuteFrom = timePickerFrom.getMinute();
+                int hourTo = timePickerTo.getHour();
+                int minuteTo = timePickerTo.getMinute();
+
+                Calendar calendarFrom = Calendar.getInstance();
+                calendarFrom.setTimeInMillis(System.currentTimeMillis());
+                calendarFrom.set(Calendar.HOUR_OF_DAY, hourFrom);
+                calendarFrom.set(Calendar.MINUTE, minuteFrom);
+                calendarFrom.set(Calendar.SECOND, 0);
+
+                Calendar calendarTo = Calendar.getInstance();
+                calendarTo.setTimeInMillis(System.currentTimeMillis());
+                calendarTo.set(Calendar.HOUR_OF_DAY, hourTo);
+                calendarTo.set(Calendar.MINUTE, minuteTo);
+                calendarTo.set(Calendar.SECOND, 0);
+
+                long timeInMillisFrom = calendarFrom.getTimeInMillis();
+                long timeInMillisTo = calendarTo.getTimeInMillis();
+
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        runScript("python TurnOnLights.py");
+                        handler.postDelayed(this, timeInMillisFrom - System.currentTimeMillis());
+                    }
+                }.run();
+
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        runScript("python TurnOffLights.py");
+                        handler.postDelayed(this, timeInMillisTo - System.currentTimeMillis());
+                    }
+                }.run();
+            }
+        });
     }
 
     public String runScript(String command) {
@@ -123,5 +166,4 @@ public class MainActivity extends AppCompatActivity {
         }
         return lines.toString();
     }
-
 }
