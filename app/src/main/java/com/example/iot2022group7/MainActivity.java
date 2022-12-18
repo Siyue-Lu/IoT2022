@@ -2,10 +2,9 @@ package com.example.iot2022group7;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.StrictMode;
-import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.Switch;
@@ -22,10 +21,17 @@ import ch.ethz.ssh2.StreamGobbler;
 
 public class MainActivity extends AppCompatActivity {
 
+    // initialise global const/var
     TextView txv_temp_indoor = null;
     TextView outdoor_light_show = null;
     Switch lightToggle = null;
     Button btnUpdateTemp = null;
+    private static final int INTERVAL = 1000;
+
+    private void setLightText(int text, int colour) {
+        outdoor_light_show.setText(text);
+        outdoor_light_show.setTextColor(getResources().getColor(colour));
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,57 +43,58 @@ public class MainActivity extends AppCompatActivity {
         lightToggle = (Switch) findViewById(R.id.btnToggle);
         btnUpdateTemp = (Button) findViewById(R.id.btnUpdateTemp);
 
-        // get light status and display in UI
+        // get temperature and display in UI periodically
+        new Runnable() {
+            @Override
+            public void run() {
+                String temp = runScript("python SendTemperature.py");
+                txv_temp_indoor.setText(temp);
+                new Handler().postDelayed(this, INTERVAL);
+            }
+        }.run();
 
+        // get light status and display in UI on create
+        ((Runnable) () -> {
+            boolean isOn = runScript("python SendLightsStatus.py").equals("True");
+            if (isOn) {
+                setLightText(R.string.txv_on, R.color.teal_700);
+            } else {
+                setLightText(R.string.txv_off, R.color.title_bar_color);
+            }
+            lightToggle.setChecked(isOn);
+        }).run();
 
         // run scripts and change UI on toggle
         lightToggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
-                    new AsyncTask<Integer, Void, Void>() {
-                        @Override
-                        protected Void doInBackground(Integer... params) {
-                            run("python TurnOnLights.py");
-                            return null;
-                        }
-
-                        @Override
-                        protected void onPostExecute(Void v) {
-                            outdoor_light_show.setText(R.string.txv_on);
-                            outdoor_light_show.setTextColor(getResources().getColor(R.color.teal_700));
-                        }
-                    }.execute(1);
+                    ((Runnable) () -> {
+                        runScript("python TurnOnLights.py");
+                        setLightText(R.string.txv_on, R.color.teal_700);
+                    }).run();
                 } else {
-                    new AsyncTask<Integer, Void, Void>() {
-                        @Override
-                        protected Void doInBackground(Integer... params) {
-                            run("python TurnOffLights.py");
-                            return null;
-                        }
-
-                        @Override
-                        protected void onPostExecute(Void v) {
-                            outdoor_light_show.setText(R.string.txv_off);
-                            outdoor_light_show.setTextColor(getResources().getColor(R.color.title_bar_color));
-                        }
-                    }.execute(1);
+                    ((Runnable) () -> {
+                        runScript("python TurnOffLights.py");
+                        setLightText(R.string.txv_off, R.color.title_bar_color);
+                    }).run();
                 }
             }
         });
 
-        btnUpdateTemp.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-
-            }
-        });
+//        btnUpdateTemp.setOnClickListener(new View.OnClickListener() {
+//            public void onClick(View v) {
+//
+//            }
+//        });
     }
 
-    public void run(String command) {
+    public String runScript(String command) {
         String hostname = "7.tcp.eu.ngrok.io";
         int port = 14536;
         String username = "pi";
         String password = "pi";
+        StringBuilder lines = new StringBuilder();
         try {
             StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
             StrictMode.setThreadPolicy(policy);
@@ -104,6 +111,7 @@ public class MainActivity extends AppCompatActivity {
                 String line = br.readLine(); // read line
                 if (line == null)
                     break;
+                lines.append(line);
             }
             /* Show exit status, if available (otherwise "null") */
             System.out.println("ExitCode: " + sess.getExitStatus());
@@ -113,6 +121,7 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace(System.err);
             System.exit(2);
         }
+        return lines.toString();
     }
 
 }
