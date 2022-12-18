@@ -2,8 +2,9 @@
     <string name="app_name">IoT 2022 Group 7</string>
     <string name="txv_title_temp">Smart Home</string>
     <string name="txv_indoor_temp">Indoor temperature:</string>
-    <string name="txv_indoor_temp_show"></string>
+    <string name="txv_indoor_temp_show">Reading temperature...</string>
     <string name="txv_outdoor_light">Lighting:</string>
-    <string name="txv_outdoor_light_show">Off</string>
-    <string name="txv_outdoor_light_on">On</string>
+    <string name="txv_outdoor_light_show">Reading light...</string>
+    <string name="txv_on">On</string>
+    <string name="txv_off">Off</string>
 </resources>

@@ -69,7 +69,7 @@
             android:padding="5dip"
             android:layout_marginLeft="20dp"
             android:text="@string/txv_outdoor_light_show"
-            android:textColor="@color/title_bar_color"
+            android:textColor="@color/black_alpha"
             android:textSize="20sp" />
 
         <Switch
@@ -94,17 +94,17 @@
         android:layout_height="wrap_content"
         android:padding="5dip">
 
-<!--        <Button-->
-<!--            android:id="@+id/btnUpdateTemp"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_marginLeft="20dp"-->
-<!--            android:background="@color/colorPrimary"-->
-<!--            android:padding="5dip"-->
-<!--            android:text=" Update temperature "-->
-<!--            android:textAllCaps="false"-->
-<!--            android:textColor="#FFFFFF"-->
-<!--            android:textSize="17sp" />-->
+        <Button
+            android:id="@+id/btnUpdateTemp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:background="@color/colorPrimary"
+            android:padding="5dip"
+            android:text=" Update temperature "
+            android:textAllCaps="false"
+            android:textColor="#FFFFFF"
+            android:textSize="17sp" />
     </LinearLayout>
 
     <LinearLayout
