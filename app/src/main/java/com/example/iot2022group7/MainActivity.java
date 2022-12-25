@@ -55,7 +55,9 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
                 runAsync("python SendTemperature.py")
                         .thenAccept(result -> {
-                            runOnUiThread(() -> txv_temp_indoor.setText(result));
+                            if (!txv_temp_indoor.getText().toString().equals(result)) {
+                                runOnUiThread(() -> txv_temp_indoor.setText(result));
+                            }
                             handler.postDelayed(this, INTERVAL);
                         }).exceptionally(e -> {
                             e.printStackTrace();
