@@ -34,6 +34,105 @@
 
     </LinearLayout>
 
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="5dip">
+
+        <TextView
+            android:id="@+id/indoorHeater"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:padding="5dip"
+            android:text="@string/txv_indoor_heater"
+            android:textColor="@color/black_alpha"
+            android:textSize="20sp" />
+
+        <TextView
+            android:id="@+id/indoorHeaterShow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:padding="5dip"
+            android:text="@string/txv_show"
+            android:textColor="@color/blue_text"
+            android:textSize="20sp" />
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/heatToggle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="40dp" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="5dip">
+
+        <TextView
+            android:id="@+id/autoHeating"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:padding="5dip"
+            android:text="@string/txv_auto_heating"
+            android:textColor="@color/black_alpha"
+            android:textSize="20sp" />
+
+        <EditText
+            android:id="@+id/temp_from"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:padding="5dip"
+            android:inputType="numberDecimal"
+            android:hint="(°C)"
+            android:maxLength="4" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:padding="5dip"
+            android:text="-"
+            android:textColor="@color/black_alpha"
+            android:textSize="20sp" />
+
+        <EditText
+            android:id="@+id/temp_to"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:padding="5dip"
+            android:inputType="numberDecimal"
+            android:hint="(°C)"
+            android:maxLength="4" />
+
+        <Button
+            android:id="@+id/btnConfirmTemp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:padding="5dip"
+            android:text="Submit"
+            android:textAllCaps="false" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="5dip">
+
+
+
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -61,19 +160,14 @@
             android:textColor="@color/blue_text"
             android:textSize="20sp" />
 
-        <Switch
-            android:id="@+id/btnToggle"
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/lightToggle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="40dp" />
 
-    </LinearLayout>
 
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="5dip"></LinearLayout>
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -151,12 +245,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="300dp"
-            android:background="@color/colorPrimary"
-            android:padding="5dip"
             android:text="@string/txv_btn_confirm"
-            android:textAllCaps="false"
-            android:textColor="#FFFFFF"
-            android:textSize="13sp" />
+            android:textAllCaps="false" />
     </LinearLayout>
 
 </LinearLayout>
