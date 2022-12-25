@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
                 runAsync("python SendTemperature.py")
                         .thenAccept(result -> {
-                            txv_temp_indoor.setText(result);
+                            runOnUiThread(() -> txv_temp_indoor.setText(result));
                             handler.postDelayed(this, INTERVAL);
                         }).exceptionally(e -> {
                             e.printStackTrace();
@@ -68,75 +68,70 @@ public class MainActivity extends AppCompatActivity {
         updateLight();
 
         // run scripts and change UI on toggle
-        lightToggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    runAsync("python TurnOnLights.py")
-                            .thenAccept(result -> {
-                                setLightText(R.string.txv_on, R.color.teal_700);
-                            }).exceptionally(e -> {
-                                e.printStackTrace();
-                                return null;
-                            });
-                } else {
-                    runAsync("python TurnOffLights.py")
-                            .thenAccept(result -> {
-                                setLightText(R.string.txv_off, R.color.title_bar_color);
-                            }).exceptionally(e -> {
-                                e.printStackTrace();
-                                return null;
-                            });
-                }
+        lightToggle.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                runAsync("python TurnOnLights.py")
+                        .thenAccept(result -> {
+                            runOnUiThread(() -> setLightText(R.string.txv_on, R.color.teal_700));
+                        }).exceptionally(e -> {
+                            e.printStackTrace();
+                            return null;
+                        });
+            } else {
+                runAsync("python TurnOffLights.py")
+                        .thenAccept(result -> {
+                            runOnUiThread(() -> setLightText(R.string.txv_off, R.color.title_bar_color));
+                        }).exceptionally(e -> {
+                            e.printStackTrace();
+                            return null;
+                        });
             }
         });
 
         // get data of two time pickers and switch the light on/off according to the set time
-        btnConfirmTime.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                int hourFrom = timePickerFrom.getHour();
-                int minuteFrom = timePickerFrom.getMinute();
-                int hourTo = timePickerTo.getHour();
-                int minuteTo = timePickerTo.getMinute();
+        btnConfirmTime.setOnClickListener(v -> {
+            int hourFrom = timePickerFrom.getHour();
+            int minuteFrom = timePickerFrom.getMinute();
+            int hourTo = timePickerTo.getHour();
+            int minuteTo = timePickerTo.getMinute();
 
-                Calendar calendarFrom = Calendar.getInstance();
-                calendarFrom.setTimeInMillis(System.currentTimeMillis());
-                calendarFrom.set(Calendar.HOUR_OF_DAY, hourFrom);
-                calendarFrom.set(Calendar.MINUTE, minuteFrom);
-                calendarFrom.set(Calendar.SECOND, 0);
+            Calendar calendarFrom = Calendar.getInstance();
+            calendarFrom.setTimeInMillis(System.currentTimeMillis());
+            calendarFrom.set(Calendar.HOUR_OF_DAY, hourFrom);
+            calendarFrom.set(Calendar.MINUTE, minuteFrom);
+            calendarFrom.set(Calendar.SECOND, 0);
 
-                Calendar calendarTo = Calendar.getInstance();
-                calendarTo.setTimeInMillis(System.currentTimeMillis());
-                calendarTo.set(Calendar.HOUR_OF_DAY, hourTo);
-                calendarTo.set(Calendar.MINUTE, minuteTo);
-                calendarTo.set(Calendar.SECOND, 0);
+            Calendar calendarTo = Calendar.getInstance();
+            calendarTo.setTimeInMillis(System.currentTimeMillis());
+            calendarTo.set(Calendar.HOUR_OF_DAY, hourTo);
+            calendarTo.set(Calendar.MINUTE, minuteTo);
+            calendarTo.set(Calendar.SECOND, 0);
 
-                long timeInMillisFrom = calendarFrom.getTimeInMillis();
-                long timeInMillisTo = calendarTo.getTimeInMillis();
-                long currentTime = System.currentTimeMillis();
+            long timeInMillisFrom = calendarFrom.getTimeInMillis();
+            long timeInMillisTo = calendarTo.getTimeInMillis();
+            long currentTime = System.currentTimeMillis();
 
-                handler.postDelayed(() -> {
-                    runAsync("python TurnOnLights.py")
-                            .thenAccept(result -> {
-                                updateLight();
-                            }).exceptionally(e -> {
-                                e.printStackTrace();
-                                return null;
-                            });
-                }, timeInMillisFrom - currentTime);
+            handler.postDelayed(() -> {
+                runAsync("python TurnOnLights.py")
+                        .thenAccept(result -> {
+                            updateLight();
+                        }).exceptionally(e -> {
+                            e.printStackTrace();
+                            return null;
+                        });
+            }, timeInMillisFrom - currentTime);
 
-                handler.postDelayed(() -> {
-                    runAsync("python TurnOffLights.py")
-                            .thenAccept(result -> {
-                                updateLight();
-                            }).exceptionally(e -> {
-                                e.printStackTrace();
-                                return null;
-                            });
-                }, timeInMillisTo - currentTime);
+            handler.postDelayed(() -> {
+                runAsync("python TurnOffLights.py")
+                        .thenAccept(result -> {
+                            updateLight();
+                        }).exceptionally(e -> {
+                            e.printStackTrace();
+                            return null;
+                        });
+            }, timeInMillisTo - currentTime);
 
-                showToast();
-            }
+            showToast();
         });
     }
 
@@ -147,22 +142,22 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateLight() {
         ((Runnable) () -> {
-            boolean isOn = false;
             try {
-                isOn = runAsync("python SendLightsStatus.py")
+                runAsync("python SendLightsStatus.py")
                         .thenApply(result -> {
-                            if (result.equals("True")) {
-                                setLightText(R.string.txv_on, R.color.teal_700);
-                            } else {
-                                setLightText(R.string.txv_off, R.color.title_bar_color);
-                            }
-                            return result.equals("True");
-                        })
-                        .get();
+                            runOnUiThread(() -> {
+                                if (result.equals("True")) {
+                                    setLightText(R.string.txv_on, R.color.teal_700);
+                                } else {
+                                    setLightText(R.string.txv_off, R.color.title_bar_color);
+                                }
+                                lightToggle.setChecked(result.equals("True"));
+                            });
+                            return null;
+                        });
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            lightToggle.setChecked(isOn);
         }).run();
     }
 
