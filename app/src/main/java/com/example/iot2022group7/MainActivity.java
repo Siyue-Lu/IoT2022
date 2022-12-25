@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Calendar;
+import java.util.concurrent.CompletableFuture;
 
 import ch.ethz.ssh2.Connection;
 import ch.ethz.ssh2.Session;
@@ -52,9 +53,14 @@ public class MainActivity extends AppCompatActivity {
         new Runnable() {
             @Override
             public void run() {
-                String temp = runScript("python SendTemperature.py");
-                txv_temp_indoor.setText(temp);
-                handler.postDelayed(this, INTERVAL);
+                runAsync("python SendTemperature.py")
+                        .thenAccept(result -> {
+                            txv_temp_indoor.setText(result);
+                            handler.postDelayed(this, INTERVAL);
+                        }).exceptionally(e -> {
+                            e.printStackTrace();
+                            return null;
+                        });
             }
         }.run();
 
@@ -66,11 +72,21 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
-                    runScript("python TurnOnLights.py");
-                    setLightText(R.string.txv_on, R.color.teal_700);
+                    runAsync("python TurnOnLights.py")
+                            .thenAccept(result -> {
+                                setLightText(R.string.txv_on, R.color.teal_700);
+                            }).exceptionally(e -> {
+                                e.printStackTrace();
+                                return null;
+                            });
                 } else {
-                    runScript("python TurnOffLights.py");
-                    setLightText(R.string.txv_off, R.color.title_bar_color);
+                    runAsync("python TurnOffLights.py")
+                            .thenAccept(result -> {
+                                setLightText(R.string.txv_off, R.color.title_bar_color);
+                            }).exceptionally(e -> {
+                                e.printStackTrace();
+                                return null;
+                            });
                 }
             }
         });
@@ -100,13 +116,23 @@ public class MainActivity extends AppCompatActivity {
                 long currentTime = System.currentTimeMillis();
 
                 handler.postDelayed(() -> {
-                    runScript("python TurnOnLights.py");
-                    updateLight();
+                    runAsync("python TurnOnLights.py")
+                            .thenAccept(result -> {
+                                updateLight();
+                            }).exceptionally(e -> {
+                                e.printStackTrace();
+                                return null;
+                            });
                 }, timeInMillisFrom - currentTime);
 
                 handler.postDelayed(() -> {
-                    runScript("python TurnOffLights.py");
-                    updateLight();
+                    runAsync("python TurnOffLights.py")
+                            .thenAccept(result -> {
+                                updateLight();
+                            }).exceptionally(e -> {
+                                e.printStackTrace();
+                                return null;
+                            });
                 }, timeInMillisTo - currentTime);
 
                 showToast();
@@ -121,11 +147,20 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateLight() {
         ((Runnable) () -> {
-            boolean isOn = runScript("python SendLightsStatus.py").equals("True");
-            if (isOn) {
-                setLightText(R.string.txv_on, R.color.teal_700);
-            } else {
-                setLightText(R.string.txv_off, R.color.title_bar_color);
+            boolean isOn = false;
+            try {
+                isOn = runAsync("python SendLightsStatus.py")
+                        .thenApply(result -> {
+                            if (result.equals("True")) {
+                                setLightText(R.string.txv_on, R.color.teal_700);
+                            } else {
+                                setLightText(R.string.txv_off, R.color.title_bar_color);
+                            }
+                            return result.equals("True");
+                        })
+                        .get();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
             lightToggle.setChecked(isOn);
         }).run();
@@ -135,38 +170,38 @@ public class MainActivity extends AppCompatActivity {
         Toast.makeText(this, "Schedule set!", Toast.LENGTH_SHORT).show();
     }
 
-    public String runScript(String command) {
-        String hostname = "7.tcp.eu.ngrok.io";
-        int port = 14536;
-        String username = "pi";
-        String password = "pi";
-        StringBuilder lines = new StringBuilder();
-        try {
-            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-            StrictMode.setThreadPolicy(policy);
-            Connection conn = new Connection(hostname, port); //init connection
-            conn.connect(); //start connection to the hostname
-            boolean isAuthenticated = conn.authenticateWithPassword(username, password);
-            if (isAuthenticated == false)
-                throw new IOException("Authentication failed.");
-            Session sess = conn.openSession();
-            sess.execCommand(command);
-            InputStream stdout = new StreamGobbler(sess.getStdout());
-            BufferedReader br = new BufferedReader(new InputStreamReader(stdout));//reads text
-            while (true) {
-                String line = br.readLine(); // read line
-                if (line == null)
-                    break;
-                lines.append(line);
+    public CompletableFuture<String> runAsync(String command) {
+        return CompletableFuture.supplyAsync(() -> {
+            String hostname = "7.tcp.eu.ngrok.io";
+            int port = 14536;
+            String username = "pi";
+            String password = "pi";
+            StringBuilder result = new StringBuilder();
+            try {
+                StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+                StrictMode.setThreadPolicy(policy);
+                Connection conn = new Connection(hostname, port); //init connection
+                conn.connect(); //start connection to the hostname
+                boolean isAuthenticated = conn.authenticateWithPassword(username, password);
+                if (isAuthenticated == false)
+                    throw new IOException("Authentication failed.");
+                Session sess = conn.openSession();
+                sess.execCommand(command);
+                InputStream stdout = new StreamGobbler(sess.getStdout());
+                BufferedReader br = new BufferedReader(new InputStreamReader(stdout));//reads text
+                String line;
+                while ((line = br.readLine()) != null) {
+                    result.append(line);
+                }
+                /* Show exit status, if available (otherwise "null") */
+                System.out.println("ExitCode: " + sess.getExitStatus());
+                sess.close(); // Close this session
+                conn.close();
+            } catch (IOException e) {
+                e.printStackTrace(System.err);
+                System.exit(2);
             }
-            /* Show exit status, if available (otherwise "null") */
-            System.out.println("ExitCode: " + sess.getExitStatus());
-            sess.close(); // Close this session
-            conn.close();
-        } catch (IOException e) {
-            e.printStackTrace(System.err);
-            System.exit(2);
-        }
-        return lines.toString();
+            return result.toString();
+        });
     }
 }
