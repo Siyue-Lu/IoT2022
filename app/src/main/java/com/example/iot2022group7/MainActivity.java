@@ -7,6 +7,8 @@ import androidx.core.content.ContextCompat;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.StrictMode;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
@@ -75,6 +77,8 @@ public class MainActivity extends AppCompatActivity {
                             }
 
                             if (isTempSet) {
+                                System.out.println( tempFrom[0]);
+                                System.out.println(tempTo[0]);
                                 if (currTemp <= tempFrom[0]) {
                                     runAsync("python TurnOnHeater.py")
                                             .thenAccept(res -> {
@@ -110,7 +114,7 @@ public class MainActivity extends AppCompatActivity {
         updateDeviceStatus(indoor_heater_show, heatToggle);
 
         // run scripts under certain conditions and change UI on toggle
-        CompoundButton.OnCheckedChangeListener toggleListener = (buttonView, isChecked) -> {
+        CompoundButton.OnCheckedChangeListener checkListener = (buttonView, isChecked) -> {
             boolean isLight = getResources().getResourceName(buttonView.getId()).contains("light");
             runAsync("python Turn" + (isChecked ? "On" : "Off") + (isLight ? "Lights" : "Heater") + ".py")
                     .thenAccept(result -> {
@@ -122,8 +126,8 @@ public class MainActivity extends AppCompatActivity {
                         return null;
                     });
         };
-        lightToggle.setOnCheckedChangeListener(toggleListener);
-        heatToggle.setOnCheckedChangeListener(toggleListener);
+        lightToggle.setOnCheckedChangeListener(checkListener);
+        heatToggle.setOnCheckedChangeListener(checkListener);
 
         // get data of two time pickers and switch the light on/off according to the set time
         btnConfirmTime.setOnClickListener(v -> {
@@ -172,7 +176,26 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // limit the decimal places of the input temperature to 1
+        TextWatcher textWatcher = new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            }
 
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                String input = editable.toString();
+                int decimalPointIndex = input.indexOf(".");
+                if (decimalPointIndex != -1 && input.length() - decimalPointIndex > 2) {
+                    editable.delete(decimalPointIndex + 2, input.length());
+                }
+            }
+        };
+        tempInputFrom.addTextChangedListener(textWatcher);
+        tempInputTo.addTextChangedListener(textWatcher);
 
         // get input temperature on click
         btnConfirmTemp.setOnClickListener(view -> {
@@ -188,7 +211,7 @@ public class MainActivity extends AppCompatActivity {
             statusText.setText((isOn ? R.string.txv_on : R.string.txv_off));
             statusText.setTextColor(ContextCompat.getColor(this, (isOn ? R.color.teal_700 : R.color.title_bar_color)));
             if (isOn != toggle.isChecked()) {
-                runOnUiThread(() -> toggle.setChecked(isOn));
+                toggle.setChecked(isOn);
             }
         });
     }
