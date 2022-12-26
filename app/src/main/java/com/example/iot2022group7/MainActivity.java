@@ -1,15 +1,15 @@
 package com.example.iot2022group7;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.content.ContextCompat;
 
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.StrictMode;
-import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
-import android.widget.Switch;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
@@ -27,10 +27,15 @@ import ch.ethz.ssh2.StreamGobbler;
 
 public class MainActivity extends AppCompatActivity {
 
-    // initialise global const/var
-    TextView txv_temp_indoor = null;
+    TextView indoor_temp_show = null;
+    TextView indoor_heater_show = null;
+    SwitchCompat heatToggle = null;
+    EditText tempInputFrom = null;
+    EditText tempInputTo = null;
+    Button btnConfirmTemp = null;
+    boolean isTempSet = false;
     TextView outdoor_light_show = null;
-    Switch lightToggle = null;
+    SwitchCompat lightToggle = null;
     TimePicker timePickerFrom = null;
     TimePicker timePickerTo = null;
     Button btnConfirmTime = null;
@@ -42,12 +47,19 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.content_main);
 
-        txv_temp_indoor = (TextView) findViewById(R.id.indoorTempShow);
+        indoor_temp_show = (TextView) findViewById(R.id.indoorTempShow);
+        indoor_heater_show = (TextView) findViewById(R.id.indoorHeaterShow);
+        heatToggle = (SwitchCompat) findViewById(R.id.heatToggle);
+        tempInputFrom = (EditText) findViewById(R.id.temp_from);
+        tempInputTo = (EditText) findViewById(R.id.temp_to);
+        btnConfirmTemp = (Button) findViewById(R.id.btnConfirmTemp);
         outdoor_light_show = (TextView) findViewById(R.id.outdoorLightShow);
-        lightToggle = (Switch) findViewById(R.id.btnToggle);
+        lightToggle = (SwitchCompat) findViewById(R.id.lightToggle);
         timePickerFrom = (TimePicker) findViewById(R.id.time_picker_from);
         timePickerTo = (TimePicker) findViewById(R.id.time_picker_to);
         btnConfirmTime = (Button) findViewById(R.id.btnConfirmTime);
+        final float[] tempFrom = new float[1];
+        final float[] tempTo = new float[1];
 
         // get temperature periodically, display on UI and run scripts under certain conditions
         new Runnable() {
@@ -55,9 +67,36 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
                 runAsync("python SendTemperature.py")
                         .thenAccept(result -> {
-                            if (!txv_temp_indoor.getText().toString().equals(result)) {
-                                runOnUiThread(() -> txv_temp_indoor.setText(result));
+                            String currTempStr = indoor_temp_show.getText().toString();
+                            float currTemp = Float.parseFloat(result);
+
+                            if (!currTempStr.equals(result)) {
+                                runOnUiThread(() -> indoor_temp_show.setText(result));
                             }
+
+                            if (isTempSet) {
+                                if (currTemp <= tempFrom[0]) {
+                                    runAsync("python TurnOnHeater.py")
+                                            .thenAccept(res -> {
+                                                setDeviceStatus(indoor_heater_show, heatToggle, true);
+                                            }).exceptionally(e -> {
+                                                e.printStackTrace();
+                                                return null;
+                                            });
+                                }
+
+                                if (currTemp >= tempTo[0]) {
+                                    runAsync("python TurnOffHeater.py")
+                                            .thenAccept(res -> {
+                                                isTempSet = false;
+                                                setDeviceStatus(indoor_heater_show, heatToggle, false);
+                                            }).exceptionally(e -> {
+                                                e.printStackTrace();
+                                                return null;
+                                            });
+                                }
+                            }
+
                             handler.postDelayed(this, INTERVAL);
                         }).exceptionally(e -> {
                             e.printStackTrace();
@@ -66,29 +105,25 @@ public class MainActivity extends AppCompatActivity {
             }
         }.run();
 
-        // get light status and display on UI on create
-        updateLight();
+        // get light status and display on UI
+        updateDeviceStatus(outdoor_light_show, lightToggle);
+        updateDeviceStatus(indoor_heater_show, heatToggle);
 
-        // run scripts and change UI on toggle
-        lightToggle.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (isChecked) {
-                runAsync("python TurnOnLights.py")
-                        .thenAccept(result -> {
-                            runOnUiThread(() -> setLightText(R.string.txv_on, R.color.teal_700));
-                        }).exceptionally(e -> {
-                            e.printStackTrace();
-                            return null;
-                        });
-            } else {
-                runAsync("python TurnOffLights.py")
-                        .thenAccept(result -> {
-                            runOnUiThread(() -> setLightText(R.string.txv_off, R.color.title_bar_color));
-                        }).exceptionally(e -> {
-                            e.printStackTrace();
-                            return null;
-                        });
-            }
-        });
+        // run scripts under certain conditions and change UI on toggle
+        CompoundButton.OnCheckedChangeListener toggleListener = (buttonView, isChecked) -> {
+            boolean isLight = getResources().getResourceName(buttonView.getId()).contains("light");
+            runAsync("python Turn" + (isChecked ? "On" : "Off") + (isLight ? "Lights" : "Heater") + ".py")
+                    .thenAccept(result -> {
+                        setDeviceStatus((isLight ? outdoor_light_show : indoor_heater_show),
+                                (isLight ? lightToggle : heatToggle),
+                                isChecked);
+                    }).exceptionally(e -> {
+                        e.printStackTrace();
+                        return null;
+                    });
+        };
+        lightToggle.setOnCheckedChangeListener(toggleListener);
+        heatToggle.setOnCheckedChangeListener(toggleListener);
 
         // get data of two time pickers and switch the light on/off according to the set time
         btnConfirmTime.setOnClickListener(v -> {
@@ -116,7 +151,7 @@ public class MainActivity extends AppCompatActivity {
             handler.postDelayed(() -> {
                 runAsync("python TurnOnLights.py")
                         .thenAccept(result -> {
-                            updateLight();
+                            setDeviceStatus(outdoor_light_show, lightToggle, true);
                         }).exceptionally(e -> {
                             e.printStackTrace();
                             return null;
@@ -126,35 +161,45 @@ public class MainActivity extends AppCompatActivity {
             handler.postDelayed(() -> {
                 runAsync("python TurnOffLights.py")
                         .thenAccept(result -> {
-                            updateLight();
+                            setDeviceStatus(outdoor_light_show, lightToggle, false);
                         }).exceptionally(e -> {
                             e.printStackTrace();
                             return null;
                         });
             }, timeInMillisTo - currentTime);
 
-            showToast();
+            showToast(btnConfirmTime);
+        });
+
+        // limit the decimal places of the input temperature to 1
+
+
+        // get input temperature on click
+        btnConfirmTemp.setOnClickListener(view -> {
+            tempFrom[0] = Float.parseFloat(tempInputFrom.getText().toString());
+            tempTo[0] = Float.parseFloat(tempInputTo.getText().toString());
+            isTempSet = true;
         });
     }
 
-    private void setLightText(int text, int colour) {
-        outdoor_light_show.setText(text);
-        outdoor_light_show.setTextColor(ContextCompat.getColor(this, colour));
+    // change status UI without running update script
+    private void setDeviceStatus(TextView statusText, SwitchCompat toggle, boolean isOn) {
+        runOnUiThread(() -> {
+            statusText.setText((isOn ? R.string.txv_on : R.string.txv_off));
+            statusText.setTextColor(ContextCompat.getColor(this, (isOn ? R.color.teal_700 : R.color.title_bar_color)));
+            if (isOn != toggle.isChecked()) {
+                runOnUiThread(() -> toggle.setChecked(isOn));
+            }
+        });
     }
 
-    private void updateLight() {
+    // get data from running scripts and update status UI
+    private void updateDeviceStatus(TextView statusText, SwitchCompat toggle) {
         ((Runnable) () -> {
             try {
-                runAsync("python SendLightsStatus.py")
+                runAsync("python Send" + (statusText == outdoor_light_show ? "Lights" : "Heater") + "Status.py")
                         .thenApply(result -> {
-                            runOnUiThread(() -> {
-                                if (result.equals("True")) {
-                                    setLightText(R.string.txv_on, R.color.teal_700);
-                                } else {
-                                    setLightText(R.string.txv_off, R.color.title_bar_color);
-                                }
-                                lightToggle.setChecked(result.equals("True"));
-                            });
+                            setDeviceStatus(statusText, toggle, result.equals("True"));
                             return null;
                         });
             } catch (Exception e) {
@@ -163,11 +208,16 @@ public class MainActivity extends AppCompatActivity {
         }).run();
     }
 
-    private void showToast() {
-        Toast.makeText(this, "Schedule set!", Toast.LENGTH_SHORT).show();
+    // show toast on buttons click
+    private void showToast(Button btn) {
+        Toast.makeText(this,
+                        (btn == btnConfirmTime ? "Schedule" : "Temperature") + " set!",
+                        Toast.LENGTH_SHORT)
+                .show();
     }
 
-    public CompletableFuture<String> runAsync(String command) {
+    // async function for scripts execution through SSH connection
+    private CompletableFuture<String> runAsync(String command) {
         return CompletableFuture.supplyAsync(() -> {
             String hostname = "7.tcp.eu.ngrok.io";
             int port = 14536;
