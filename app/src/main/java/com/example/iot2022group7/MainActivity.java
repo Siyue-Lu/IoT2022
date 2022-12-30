@@ -32,8 +32,8 @@ public class MainActivity extends AppCompatActivity {
     TextView indoor_temp_show = null;
     TextView indoor_heater_show = null;
     SwitchCompat heatToggle = null;
-    EditText tempInputFrom = null;
-    EditText tempInputTo = null;
+    EditText tempInputMin = null;
+    EditText tempInputMax = null;
     Button btnConfirmTemp = null;
     boolean isTempSet = false;
     TextView outdoor_light_show = null;
@@ -52,16 +52,16 @@ public class MainActivity extends AppCompatActivity {
         indoor_temp_show = (TextView) findViewById(R.id.indoorTempShow);
         indoor_heater_show = (TextView) findViewById(R.id.indoorHeaterShow);
         heatToggle = (SwitchCompat) findViewById(R.id.heatToggle);
-        tempInputFrom = (EditText) findViewById(R.id.temp_from);
-        tempInputTo = (EditText) findViewById(R.id.temp_to);
+        tempInputMin = (EditText) findViewById(R.id.temp_min);
+        tempInputMax = (EditText) findViewById(R.id.temp_max);
         btnConfirmTemp = (Button) findViewById(R.id.btnConfirmTemp);
         outdoor_light_show = (TextView) findViewById(R.id.outdoorLightShow);
         lightToggle = (SwitchCompat) findViewById(R.id.lightToggle);
         timePickerFrom = (TimePicker) findViewById(R.id.time_picker_from);
         timePickerTo = (TimePicker) findViewById(R.id.time_picker_to);
         btnConfirmTime = (Button) findViewById(R.id.btnConfirmTime);
-        final float[] tempFrom = new float[1];
-        final float[] tempTo = new float[1];
+        final float[] tempMin = new float[1];
+        final float[] tempMax = new float[1];
 
         // get temperature periodically, display on UI and run scripts under certain conditions
         new Runnable() {
@@ -77,9 +77,7 @@ public class MainActivity extends AppCompatActivity {
                             }
 
                             if (isTempSet) {
-                                System.out.println( tempFrom[0]);
-                                System.out.println(tempTo[0]);
-                                if (currTemp <= tempFrom[0]) {
+                                if (currTemp <= tempMin[0]) {
                                     runAsync("python TurnOnHeater.py")
                                             .thenAccept(res -> {
                                                 setDeviceStatus(indoor_heater_show, heatToggle, true);
@@ -88,8 +86,7 @@ public class MainActivity extends AppCompatActivity {
                                                 return null;
                                             });
                                 }
-
-                                if (currTemp >= tempTo[0]) {
+                                if (currTemp >= tempMax[0]) {
                                     runAsync("python TurnOffHeater.py")
                                             .thenAccept(res -> {
                                                 isTempSet = false;
@@ -194,14 +191,21 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         };
-        tempInputFrom.addTextChangedListener(textWatcher);
-        tempInputTo.addTextChangedListener(textWatcher);
+        tempInputMin.addTextChangedListener(textWatcher);
+        tempInputMax.addTextChangedListener(textWatcher);
 
-        // get input temperature on click
+        // get input temperature on click, display the input value in hint
         btnConfirmTemp.setOnClickListener(view -> {
-            tempFrom[0] = Float.parseFloat(tempInputFrom.getText().toString());
-            tempTo[0] = Float.parseFloat(tempInputTo.getText().toString());
+            tempMin[0] = Float.parseFloat(tempInputMin.getText().toString());
+            tempMax[0] = Float.parseFloat(tempInputMax.getText().toString());
             isTempSet = true;
+            showToast(btnConfirmTemp);
+            runOnUiThread(()->{
+                tempInputMin.setText("");
+                tempInputMax.setText("");
+                tempInputMin.setHint(Float.toString(tempMin[0]));
+                tempInputMax.setHint(Float.toString(tempMax[0]));
+            });
         });
     }
 
