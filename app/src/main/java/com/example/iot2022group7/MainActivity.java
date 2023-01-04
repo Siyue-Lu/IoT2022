@@ -79,9 +79,8 @@ public class MainActivity extends AppCompatActivity {
                             if (isTempSet) {
                                 if (currTemp <= tempMin[0]) {
                                     runAsync("python TurnOnHeater.py")
-                                            .thenAccept(res -> {
-                                                setDeviceStatus(indoor_heater_show, heatToggle, true);
-                                            }).exceptionally(e -> {
+                                            .thenAccept(res -> setDeviceStatus(indoor_heater_show, heatToggle, true))
+                                            .exceptionally(e -> {
                                                 e.printStackTrace();
                                                 return null;
                                             });
@@ -114,11 +113,10 @@ public class MainActivity extends AppCompatActivity {
         CompoundButton.OnCheckedChangeListener checkListener = (buttonView, isChecked) -> {
             boolean isLight = getResources().getResourceName(buttonView.getId()).contains("light");
             runAsync("python Turn" + (isChecked ? "On" : "Off") + (isLight ? "Lights" : "Heater") + ".py")
-                    .thenAccept(result -> {
-                        setDeviceStatus((isLight ? outdoor_light_show : indoor_heater_show),
-                                (isLight ? lightToggle : heatToggle),
-                                isChecked);
-                    }).exceptionally(e -> {
+                    .thenAccept(result -> setDeviceStatus((isLight ? outdoor_light_show : indoor_heater_show),
+                            (isLight ? lightToggle : heatToggle),
+                            isChecked))
+                    .exceptionally(e -> {
                         e.printStackTrace();
                         return null;
                     });
@@ -149,25 +147,19 @@ public class MainActivity extends AppCompatActivity {
             long timeInMillisTo = calendarTo.getTimeInMillis();
             long currentTime = System.currentTimeMillis();
 
-            handler.postDelayed(() -> {
-                runAsync("python TurnOnLights.py")
-                        .thenAccept(result -> {
-                            setDeviceStatus(outdoor_light_show, lightToggle, true);
-                        }).exceptionally(e -> {
-                            e.printStackTrace();
-                            return null;
-                        });
-            }, timeInMillisFrom - currentTime);
+            handler.postDelayed(() -> runAsync("python TurnOnLights.py")
+                    .thenAccept(result -> setDeviceStatus(outdoor_light_show, lightToggle, true))
+                    .exceptionally(e -> {
+                        e.printStackTrace();
+                        return null;
+                    }), timeInMillisFrom - currentTime);
 
-            handler.postDelayed(() -> {
-                runAsync("python TurnOffLights.py")
-                        .thenAccept(result -> {
-                            setDeviceStatus(outdoor_light_show, lightToggle, false);
-                        }).exceptionally(e -> {
-                            e.printStackTrace();
-                            return null;
-                        });
-            }, timeInMillisTo - currentTime);
+            handler.postDelayed(() -> runAsync("python TurnOffLights.py")
+                    .thenAccept(result -> setDeviceStatus(outdoor_light_show, lightToggle, false))
+                    .exceptionally(e -> {
+                        e.printStackTrace();
+                        return null;
+                    }), timeInMillisTo - currentTime);
 
             showToast(btnConfirmTime);
         });
@@ -200,7 +192,7 @@ public class MainActivity extends AppCompatActivity {
             tempMax[0] = Float.parseFloat(tempInputMax.getText().toString());
             isTempSet = true;
             showToast(btnConfirmTemp);
-            runOnUiThread(()->{
+            runOnUiThread(() -> {
                 tempInputMin.setText("");
                 tempInputMax.setText("");
                 tempInputMin.setHint(Float.toString(tempMin[0]));
@@ -222,17 +214,14 @@ public class MainActivity extends AppCompatActivity {
 
     // get data from running scripts and update status UI
     private void updateDeviceStatus(TextView statusText, SwitchCompat toggle) {
-        ((Runnable) () -> {
-            try {
-                runAsync("python Send" + (statusText == outdoor_light_show ? "Lights" : "Heater") + "Status.py")
-                        .thenApply(result -> {
-                            setDeviceStatus(statusText, toggle, result.equals("True"));
-                            return null;
-                        });
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }).run();
+        runAsync("python Send" + (statusText == outdoor_light_show ? "Lights" : "Heater") + "Status.py")
+                .thenApply(result -> {
+                    setDeviceStatus(statusText, toggle, result.equals("True"));
+                    return null;
+                }).exceptionally(e -> {
+                    e.printStackTrace();
+                    return null;
+                });
     }
 
     // show toast on buttons click
@@ -257,7 +246,7 @@ public class MainActivity extends AppCompatActivity {
                 Connection conn = new Connection(hostname, port); //init connection
                 conn.connect(); //start connection to the hostname
                 boolean isAuthenticated = conn.authenticateWithPassword(username, password);
-                if (isAuthenticated == false)
+                if (!isAuthenticated)
                     throw new IOException("Authentication failed.");
                 Session sess = conn.openSession();
                 sess.execCommand(command);
