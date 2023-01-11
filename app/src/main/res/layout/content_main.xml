@@ -91,7 +91,7 @@
             android:layout_marginLeft="10dp"
             android:padding="5dip"
             android:inputType="numberDecimal"
-            android:hint="(°C)"
+            android:hint="@string/txv_default_hint"
             android:maxLength="4" />
 
         <TextView

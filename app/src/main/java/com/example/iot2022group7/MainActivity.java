@@ -90,6 +90,8 @@ public class MainActivity extends AppCompatActivity {
                                             .thenAccept(res -> {
                                                 isTempSet = false;
                                                 setDeviceStatus(indoor_heater_show, heatToggle, false);
+                                                tempInputMin.setHint(R.string.txv_default_hint);
+                                                tempInputMax.setHint(R.string.txv_default_hint);
                                             }).exceptionally(e -> {
                                                 e.printStackTrace();
                                                 return null;

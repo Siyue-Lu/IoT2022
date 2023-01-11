@@ -4,6 +4,7 @@
     <string name="txv_indoor_temp">Indoor temperature:</string>
     <string name="txv_indoor_heater">Heater:</string>
     <string name="txv_auto_heating">Auto Heating:</string>
+    <string name="txv_default_hint">(°C)</string>
     <string name="txv_outdoor_light">Lighting:</string>
     <string name="txv_light_schedule">Lighting schedule:</string>
     <string name="txv_light_schedule_from">From:</string>
