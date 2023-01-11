@@ -235,8 +235,8 @@ public class MainActivity extends AppCompatActivity {
     // async function for scripts execution through SSH connection
     private CompletableFuture<String> runAsync(String command) {
         return CompletableFuture.supplyAsync(() -> {
-            String hostname = "7.tcp.eu.ngrok.io";
-            int port = 14536;
+            String hostname = "4.tcp.eu.ngrok.io";
+            int port = 11617;
             String username = "pi";
             String password = "pi";
             StringBuilder result = new StringBuilder();
