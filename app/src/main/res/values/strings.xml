@@ -1,11 +1,10 @@
 <resources>
-    <string name="app_name">IoT 2022 Group 7</string>
-    <string name="txv_title_temp">Smart Home</string>
+    <string name="app_name">Smart Home System</string>
+    <string name="txv_indoor_heater">Smart Heater</string>
     <string name="txv_indoor_temp">Indoor temperature:</string>
-    <string name="txv_indoor_heater">Heater:</string>
     <string name="txv_auto_heating">Auto Heating:</string>
     <string name="txv_default_hint">(°C)</string>
-    <string name="txv_outdoor_light">Lighting:</string>
+    <string name="txv_outdoor_light">Smart Lamp</string>
     <string name="txv_light_schedule">Lighting schedule:</string>
     <string name="txv_light_schedule_from">From:</string>
     <string name="txv_light_schedule_to">To:</string>

@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/background"
+    tools:context=".HeaterActivity">
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="30dp"
+        android:layout_marginTop="15dp"
+        android:fontFamily="sans-serif-condensed"
+        android:gravity="center"
+        android:text="@string/txv_indoor_heater"
+        android:textColor="@color/white"
+        android:textSize="25sp"
+
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="TextContrastCheck" />
+
+
+    <ImageView
+        android:id="@+id/imageView1"
+        android:layout_width="51dp"
+        android:layout_height="43dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="30dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/leftarrow" />
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="149dp"
+        android:layout_marginBottom="288dp"
+        android:background="#83000000"
+        android:orientation="horizontal"
+        android:padding="5dip"
+        android:layout_marginRight="5dp"
+        android:layout_marginLeft="5dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="126dp"
+            app:cardElevation="0dp"
+            />
+
+
+        <TextView
+            android:id="@+id/autoHeating"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:padding="5dip"
+            android:text="@string/txv_auto_heating"
+            android:textColor="#F8F0F0"
+            android:textSize="23sp"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/temp_min"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="0dp"
+            android:layout_marginTop="60dp"
+            android:background="@color/white"
+            android:hint="@string/txv_default_hint"
+            android:importantForAutofill="no"
+
+            android:inputType="numberDecimal"
+            android:maxLength="4"
+            android:minWidth="48dp"
+            android:minHeight="48dp"
+            android:padding="5dip"
+            android:textColorHint="#090808"
+            tools:ignore="DuplicateSpeakableTextCheck" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="30dp"
+            android:layout_marginTop="60dp"
+            android:padding="5dip"
+            android:text="-"
+            android:textColor="@color/white"
+            android:textSize="25sp" />
+
+        <EditText
+            android:id="@+id/temp_max"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="30dp"
+            android:layout_marginTop="60dp"
+            android:background="@color/white"
+            android:hint="@string/txv_default_hint"
+            android:importantForAutofill="no"
+            android:inputType="numberDecimal"
+            android:maxLength="4"
+            android:minWidth="48dp"
+            android:minHeight="48dp"
+            android:padding="5dip"
+            android:textColorHint="#121111" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+
+        android:layout_marginTop="204dp"
+        android:background="#83000000"
+        android:layout_marginRight="5dp"
+        android:layout_marginLeft="5dp"
+        android:orientation="horizontal"
+        android:padding="5dip"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/black"
+            app:cardCornerRadius="126dp"
+
+            app:cardElevation="0dp"
+
+            />
+
+        <TextView
+            android:id="@+id/indoorHeater"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="9dp"
+
+            android:padding="5dip"
+            android:text="@string/txv_indoor_heater"
+            android:textColor="#F8F0F0"
+            android:textSize="21sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/indoorHeaterShow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:padding="5dip"
+            android:text="@string/txv_show"
+            android:textColor="#E8EBEF"
+            android:textSize="20sp" />
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/heatToggle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="37dp"
+            android:minWidth="48dp"
+            tools:ignore="TouchTargetSizeCheck" />
+
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/btnConfirmTemp"
+        android:layout_width="97dp"
+        android:layout_height="49dp"
+        android:layout_marginBottom="216dp"
+        android:padding="5dip"
+        android:text="@string/txv_btn_confirm"
+        android:textAllCaps="false"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/linearLayout2"
+        android:layout_width="match_parent"
+        android:layout_height="68dp"
+        android:layout_marginRight="5dp"
+        android:layout_marginLeft="5dp"
+        android:layout_marginTop="124dp"
+        android:background="#83000000"
+        android:orientation="horizontal"
+        android:padding="5dip"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/black"
+            app:cardCornerRadius="126dp"
+
+            app:cardElevation="0dp"
+
+            />
+
+        <TextView
+            android:id="@+id/indoorTemp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="3dp"
+            android:layout_marginBottom="15dp"
+            android:padding="5dip"
+            android:text="@string/txv_indoor_temp"
+            android:textColor="#F8F0F0"
+            android:textSize="19sp"
+            android:textStyle="bold"
+
+
+            />
+
+        <TextView
+            android:id="@+id/indoorTempShow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="3dp"
+            android:layout_marginTop="2dp"
+
+            android:text="@string/txv_show"
+
+            android:textColor="#F8F0F0"
+
+            android:textSize="19sp" />
+
+    </LinearLayout>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
