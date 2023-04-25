@@ -1,7 +1,7 @@
 # Smart Home (IoT 2022)
 
 ## Functionality Demo
-https://user-images.githubusercontent.com/89789038/232575034-78b6666a-955d-42df-b04c-1d1d0060aa7c.mp4
+https://user-images.githubusercontent.com/89789038/234255146-22db5b12-05d8-4e59-a043-60327fc7fb0d.mp4
 
 ## Final UI
 <table>
